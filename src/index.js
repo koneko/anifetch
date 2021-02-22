@@ -69,7 +69,6 @@ const fetchData = () => {
         `
         searching.remove()
         found.appendChild(div)
-        document.querySelector('.navbar-toggler').click()
         loopthru(data.results)
       });
   } else {
