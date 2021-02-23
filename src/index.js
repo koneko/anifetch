@@ -16,10 +16,10 @@ document.getElementById("app").innerHTML = `
 
   </div>
 
-  <div id="found"></div>
+  <div id="found"></div><br>
   <input id="input" placeholder="Anime..." style="text-align:center;"><br><br>
-  <button onmousedown="fetchData()" id="fetchbtn">Search</button><br><br>
-  <button onmousedown="safeSearchChange()" id="safesearchbtn">SafeSearch: ON</button>
+  <button onmousedown="fetchData()" id="fetchbtn" class="btn btn-outline-primary" style="width: 120px;">Find Anime</button><br><br>
+  <button onmousedown="safeSearchChange()" id="safesearchbtn" class="btn btn-outline-secondary" style="height: 30px;width:140px;padding:2px 2px 2px 2px;">SafeSearch: ON</button>
 </div>
 `;
 const fetchData = () => {
@@ -31,10 +31,13 @@ const fetchData = () => {
   if(!document.getElementById('anime')) {
     const input = document.getElementById('input').value;
     const searching = document.createElement('div')
-    searching.setAttribute('class', 'loader');
-    searching.innerText = "loader"
+    const searchinginner = document.createElement('div')
+    searching.setAttribute('class', 'outerloader')
+    searching.setAttribute('style', "display:flex;justify-content:center;")
+    searchinginner.setAttribute('class', 'loader');
+    searchinginner.innerText = "."
     console.log(input)
-    
+    searching.appendChild(searchinginner)
     document.getElementById('found').appendChild(searching)
     fetch(
       `https://api.jikan.moe/v3/search/anime?q=${input}&genre=12&genre_exclude=0`
@@ -49,11 +52,8 @@ const fetchData = () => {
             failed.innerText = "404 Error. Anime can not be found on MAL. Please try again."
             found.appendChild(failed)
             setTimeout(() => {
-              failed.remove()
-              setTimeout(() => {
-                location.reload()
-              }, 1000);
-            }, 3000);
+              location.reload()
+            }, 2000);
           }, 2000);
 
         }
@@ -66,14 +66,11 @@ const fetchData = () => {
           setTimeout(() => {
             
             searching.remove()
-            failed.innerText = "Sorry, can't let you do that since the anime is rated R. if you would like to turn this feauture off, press the safe search button."
+            failed.innerHTML = "Sorry, I can't let you do that since the anime is rated R. <i class='text-muted'>Search again with SafeSearch turned off if you wanna view the R rated anime.</i>"
             found.appendChild(failed)
             setTimeout(() => {
-              failed.remove()
-              setTimeout(() => {
                 location.reload()
-              }, 2000);
-            }, 6000);
+            }, 4000);
           }, 2000);
 
         }
@@ -113,12 +110,12 @@ const fetchData = () => {
       Score: ${resp.score}
       </p>
       <p class="text-muted">Members: ${resp.members}</p>
-      <p>ID: <span id="animeid">${resp.mal_id}</span></p>
+      <p class="text-muted">ID: <span id="animeid">${resp.mal_id}</span></p>
       </div>
         </div>
         `
 
-        if(removeanimecuzbad == true && document.getElementById('anime')) {
+        if(removeanimecuzbad == true) {
           document.getElementById('anime').remove();
         } else {
           loopthru(data.results)
