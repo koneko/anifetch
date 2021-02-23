@@ -1,32 +1,82 @@
 var currentAnime = 0;
-
+var safeSearch = true;
 
 document.getElementById("app").innerHTML = `
 <br><div id="main">
+  <div class="welcomemsg">
+  <h1>Welcome to AniFetch</h1>
+  <p>The free tool to <i>fetch</i> information about anime.</p>
+  <br>
+  <h3>How to use</h3>
+  <p>Simply enter any anime name and press "Search".  </p>
+  <p>When searching finishes, you automaticaly get the first result.  </p>
+  <p>To change what result you get, click the buttons at the top(max = 20).  </p>
+  <p>Enjoy searching for anime and have fun.  </p>
+  <p class="text-muted" id="plsbackon"><i>btw, you cant search for anime with nudity, i filter that :3</i>  </p>
+
+  </div>
+
   <div id="found"></div>
-  <input id="input" placeholder="anime name"><br><br>
-  <button onmousedown="fetchData()" id="fetchbtn">Search</button>
+  <input id="input" placeholder="Anime..." style="text-align:center;"><br><br>
+  <button onmousedown="fetchData()" id="fetchbtn">Search</button><br><br>
+  <button onmousedown="safeSearchChange()" id="safesearchbtn">SafeSearch: ON</button>
 </div>
 `;
 const fetchData = () => {
+  if(document.querySelector('.welcomemsg')) {
+    document.querySelector('.welcomemsg').remove()
+  }
+
   const found = document.getElementById('found');
   if(!document.getElementById('anime')) {
     const input = document.getElementById('input').value;
-    const searching = document.createElement('p')
+    const searching = document.createElement('div')
+    searching.setAttribute('class', 'loader');
+    searching.innerText = "loader"
     console.log(input)
-    searching.innerText = "Searching..."
+    
     document.getElementById('found').appendChild(searching)
     fetch(
-      `https://api.jikan.moe/v3/search/anime?q=${input}`
+      `https://api.jikan.moe/v3/search/anime?q=${input}&genre=12&genre_exclude=0`
     )
       .then((res) => res.json())
       .then(data => {
         console.log(data)
-        if(!data) {
-          debugger;
+        if(data.status == 404) {
+          var failed = document.createElement('p');
+          setTimeout(() => {
+            searching.remove()
+            failed.innerText = "404 Error. Anime can not be found on MAL. Please try again."
+            found.appendChild(failed)
+            setTimeout(() => {
+              failed.remove()
+              setTimeout(() => {
+                location.reload()
+              }, 1000);
+            }, 3000);
+          }, 2000);
+
         }
+        
 
         const resp = data.results[currentAnime]
+        if(resp.rated == "R" && safeSearch == true) {
+          var failed = document.createElement('p');
+          var removeanimecuzbad = true;
+          setTimeout(() => {
+            
+            searching.remove()
+            failed.innerText = "Sorry, can't let you do that since the anime is rated R. if you would like to turn this feauture off, press the safe search button."
+            found.appendChild(failed)
+            setTimeout(() => {
+              failed.remove()
+              setTimeout(() => {
+                location.reload()
+              }, 2000);
+            }, 6000);
+          }, 2000);
+
+        }
         // const synopsis = resp.synopsis.replace(/[.]/g, "<br>")
         let div = document.createElement('div');
         div.innerHTML = `
@@ -62,14 +112,20 @@ const fetchData = () => {
       <p class="text-muted">
       Score: ${resp.score}
       </p>
-      
       <p class="text-muted">Members: ${resp.members}</p>
+      <p>ID: <span id="animeid">${resp.mal_id}</span></p>
       </div>
         </div>
         `
-        searching.remove()
-        found.appendChild(div)
-        loopthru(data.results)
+
+        if(removeanimecuzbad == true && document.getElementById('anime')) {
+          document.getElementById('anime').remove();
+        } else {
+          loopthru(data.results)
+          searching.remove()
+          found.appendChild(div)
+        }
+
       });
   } else {
     document.getElementById('anime').remove();
@@ -113,6 +169,25 @@ function checkForChildren() {
   checkForChildren()
 }
 
+function safeSearchChange() {
+  const thingy = document.getElementById('safesearchbtn')
+  if(safeSearch == true) {
+    safeSearch = false
+    thingy.innerText = "SafeSearch: OFF"
+    if(document.getElementById('plsbackon')) {
+    document.getElementById('plsbackon').innerText = "pls turn safesearch on, its not safe out here ;-;"
+    // alert('turned safesearch off, be carefull')
+    }
+  }
+  else if(safeSearch == false) {
+    safeSearch = true
+    thingy.innerText = "SafeSearch: ON"
+    // alert('turned safesearch on, great job for doing that :3')
+    if(document.getElementById('plsbackon')) {
+    document.getElementById('plsbackon').innerText = "thanks for putting safe search back on :3"
+    }
+  }
+}
 
 function changeAnime(num) {
   currentAnime = +num;
